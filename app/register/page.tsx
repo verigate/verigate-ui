@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -26,7 +25,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useAuth } from "@/hooks/use-auth";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -89,6 +88,7 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     formState: { errors },
+    control,
     watch,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -364,10 +364,17 @@ export default function RegisterPage() {
 
               <div className="space-y-4 pt-2">
                 <div className="flex items-start space-x-3">
-                  <Checkbox
-                    id="acceptTerms"
-                    {...register("acceptTerms")}
-                    className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                  <Controller
+                    control={control}
+                    name="acceptTerms"
+                    render={({ field: { onChange, value } }) => (
+                      <Checkbox
+                        id="acceptTerms"
+                        checked={value}
+                        onCheckedChange={onChange}
+                        className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      />
+                    )}
                   />
                   <div className="grid gap-1.5 leading-none">
                     <label
@@ -377,6 +384,7 @@ export default function RegisterPage() {
                       <span
                         className={errors.acceptTerms ? "text-red-500" : ""}
                       >
+                        I agree to the{" "}
                         <button
                           type="button"
                           onClick={() =>
@@ -385,18 +393,24 @@ export default function RegisterPage() {
                           className="text-emerald-600 hover:underline"
                         >
                           Terms of Service
-                        </button>{" "}
-                        I agree to the
+                        </button>
                       </span>
                     </label>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
-                  <Checkbox
-                    id="acceptPrivacy"
-                    {...register("acceptPrivacy")}
-                    className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                  <Controller
+                    control={control}
+                    name="acceptPrivacy"
+                    render={({ field: { onChange, value } }) => (
+                      <Checkbox
+                        id="acceptPrivacy"
+                        checked={value}
+                        onCheckedChange={onChange}
+                        className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      />
+                    )}
                   />
                   <div className="grid gap-1.5 leading-none">
                     <label
@@ -406,6 +420,7 @@ export default function RegisterPage() {
                       <span
                         className={errors.acceptPrivacy ? "text-red-500" : ""}
                       >
+                        I agree to the{" "}
                         <button
                           type="button"
                           onClick={() =>
@@ -416,8 +431,7 @@ export default function RegisterPage() {
                           className="text-emerald-600 hover:underline"
                         >
                           Privacy Policy
-                        </button>{" "}
-                        I agree to the
+                        </button>
                       </span>
                     </label>
                   </div>
