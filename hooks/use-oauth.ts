@@ -15,18 +15,18 @@ export function useConsentInfo(
 ) {
   const toast = useToastContext()
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ["consent", clientId, scope, redirectUri, state, codeChallenge, codeChallengeMethod],
     queryFn: () => OAuthService.getConsentInfo(clientId, scope, redirectUri, state, codeChallenge, codeChallengeMethod),
     enabled: !!clientId && !!scope && !!redirectUri,
-    onError: (error) => {
-      toast.addToast({
-        title: "동의 정보 조회 실패",
-        description: getErrorMessage(error),
-        type: "error",
-      })
-    },
   })
+
+  // Handle errors using useEffect or similar pattern if needed
+  if (query.error) {
+    // Error handling can be done at component level
+  }
+
+  return query
 }
 
 export function useConsent() {
@@ -36,7 +36,7 @@ export function useConsent() {
     mutationFn: (data: ConsentRequest) => OAuthService.submitConsent(data),
     onError: (error) => {
       toast.addToast({
-        title: "동의 처리 실패",
+        title: "Failed to process consent",
         description: getErrorMessage(error),
         type: "error",
       })

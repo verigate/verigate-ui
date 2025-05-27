@@ -1,7 +1,7 @@
 "use client"
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import ClientService, { type ClientCreateRequest } from "@/lib/services/client-service"
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import ClientService, { type ClientCreateRequest, type ClientsResponse, type Client } from "@/lib/services/client-service"
 import { useToastContext } from "@/providers/toast-provider"
 import { getErrorMessage } from "@/lib/errors"
 
@@ -9,10 +9,10 @@ export function useClients(page = 1, limit = 10) {
   const queryClient = useQueryClient()
   const toast = useToastContext()
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery<ClientsResponse>({
     queryKey: ["clients", page, limit],
     queryFn: () => ClientService.getClients(page, limit),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 
   const createClientMutation = useMutation({
@@ -20,16 +20,9 @@ export function useClients(page = 1, limit = 10) {
     onSuccess: (newClient) => {
       queryClient.invalidateQueries({ queryKey: ["clients"] })
       toast.addToast({
-        title: "클라이언트 생성 성공",
-        description: `${newClient.client_name} 클라이언트가 성공적으로 생성되었습니다.`,
+        title: "Client Created Successfully",
+        description: `${newClient.client_name} client has been successfully created.`,
         type: "success",
-      })
-    },
-    onError: (error) => {
-      toast.addToast({
-        title: "클라이언트 생성 실패",
-        description: getErrorMessage(error),
-        type: "error",
       })
     },
   })
@@ -41,14 +34,14 @@ export function useClients(page = 1, limit = 10) {
       queryClient.invalidateQueries({ queryKey: ["clients"] })
       queryClient.invalidateQueries({ queryKey: ["client", variables.id] })
       toast.addToast({
-        title: "클라이언트 업데이트 성공",
-        description: "클라이언트가 성공적으로 업데이트되었습니다.",
+        title: "Client Updated Successfully",
+        description: "Client has been successfully updated.",
         type: "success",
       })
     },
     onError: (error) => {
       toast.addToast({
-        title: "클라이언트 업데이트 실패",
+        title: "Client Update Failed",
         description: getErrorMessage(error),
         type: "error",
       })
@@ -60,14 +53,14 @@ export function useClients(page = 1, limit = 10) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] })
       toast.addToast({
-        title: "클라이언트 삭제 성공",
-        description: "클라이언트가 성공적으로 삭제되었습니다.",
+        title: "Client Deleted Successfully",
+        description: "Client has been successfully deleted.",
         type: "success",
       })
     },
     onError: (error) => {
       toast.addToast({
-        title: "클라이언트 삭제 실패",
+        title: "Client Deletion Failed",
         description: getErrorMessage(error),
         type: "error",
       })
@@ -95,18 +88,9 @@ export function useClients(page = 1, limit = 10) {
 }
 
 export function useClient(id: number) {
-  const toast = useToastContext()
-
-  return useQuery({
+  return useQuery<Client>({
     queryKey: ["client", id],
     queryFn: () => ClientService.getClient(id),
     enabled: !!id,
-    onError: (error) => {
-      toast.addToast({
-        title: "클라이언트 조회 실패",
-        description: getErrorMessage(error),
-        type: "error",
-      })
-    },
   })
 }
