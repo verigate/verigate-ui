@@ -368,12 +368,7 @@ export default function RegisterPage() {
                     control={control}
                     name="acceptTerms"
                     render={({ field: { onChange, value } }) => (
-                      <Checkbox
-                        id="acceptTerms"
-                        checked={value}
-                        onCheckedChange={onChange}
-                        className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                      />
+                      <Checkbox id="acceptTerms" checked={value} onCheckedChange={onChange} className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600" />
                     )}
                   />
                   <div className="grid gap-1.5 leading-none">
@@ -404,12 +399,7 @@ export default function RegisterPage() {
                     control={control}
                     name="acceptPrivacy"
                     render={({ field: { onChange, value } }) => (
-                      <Checkbox
-                        id="acceptPrivacy"
-                        checked={value}
-                        onCheckedChange={onChange}
-                        className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                      />
+                      <Checkbox id="acceptPrivacy" checked={value} onCheckedChange={onChange} className="mt-1 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600" />
                     )}
                   />
                   <div className="grid gap-1.5 leading-none">
