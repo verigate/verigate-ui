@@ -1,19 +1,19 @@
 import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios"
 
-// API 응답 타입 정의
+// API response type definitions
 export interface ApiResponse<T> {
   data: T
   status: number
   headers: Record<string, string>
 }
 
-// API 오류 타입 정의
+// API error type definitions
 export interface ApiError {
   error: string
   error_description: string
 }
 
-// API 클라이언트 클래스
+// API client class
 class ApiClient {
   private client: AxiosInstance
   private baseUrl: string
@@ -27,15 +27,15 @@ class ApiClient {
       headers: {
         "Content-Type": "application/json",
       },
-      timeout: 30000, // 30초 타임아웃
+      timeout: 30000, // 30 second timeout
     })
 
     this.setupInterceptors()
   }
 
-  // 인터셉터 설정
+  // Setup interceptors
   private setupInterceptors(): void {
-    // 요청 인터셉터
+    // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
         if (typeof window !== "undefined") {
@@ -49,23 +49,23 @@ class ApiClient {
       (error) => Promise.reject(error),
     )
 
-    // 응답 인터셉터
+    // Response interceptor
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError<ApiError>) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
 
-        // 토큰 만료 처리 (401 에러)
+        // Handle token expiration (401 error)
         if (error.response?.status === 401 && !originalRequest._retry && typeof window !== "undefined") {
-          // 로그인 페이지에서의 401은 자격 증명 오류이므로 토큰 갱신을 시도하지 않음
+          // Don't attempt token refresh for login page 401s as they are credential errors
           if (originalRequest.url === "/api/v1/users/login") {
             return Promise.reject({
-              message: "이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.",
+              message: "Incorrect email or password. Please check again.",
               code: "invalid_credentials",
             })
           }
 
-          // 토큰 갱신 로직
+          // Token refresh logic
           const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh_token") : null
 
           if (refreshToken) {
@@ -77,7 +77,7 @@ class ApiClient {
               const tokens = await this.refreshPromise
               this.refreshPromise = null
 
-              // 새 토큰으로 원래 요청 재시도
+              // Retry original request with new token
               if (originalRequest.headers) {
                 originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`
               }
@@ -85,89 +85,89 @@ class ApiClient {
               return this.client(originalRequest)
             } catch (refreshError) {
               this.refreshPromise = null
-              // 토큰 갱신 실패 시 로그아웃
+              // Logout when token refresh fails
               this.logout()
               return Promise.reject({
-                message: "로그인 세션이 만료되었습니다. 다시 로그인해주세요.",
+                message: "Login session has expired. Please log in again.",
                 code: "session_expired",
               })
             }
           } else {
-            // 리프레시 토큰이 없으면 로그아웃
+            // Logout if no refresh token available
             this.logout()
             return Promise.reject({
-              message: "로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.",
+              message: "Login is required for this service. Redirecting to login page.",
               code: "authentication_required",
             })
           }
         }
 
-        // 네트워크 에러 처리
+        // Handle network errors
         if (!error.response) {
-          // 인터넷 연결 확인
+          // Check internet connection
           if (!navigator.onLine) {
             return Promise.reject({
-              message: "인터넷 연결이 끊어졌습니다. 네트워크 연결을 확인하고 다시 시도해주세요.",
+              message: "Internet connection is lost. Please check your network connection and try again.",
               code: "network_offline",
             })
           }
           return Promise.reject({
-            message: "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
+            message: "Cannot connect to server. Please try again later.",
             code: "network_error",
           })
         }
 
-        // HTTP 상태 코드별 에러 처리
+        // Handle HTTP status code errors
         if (error.response.status === 400) {
           return Promise.reject({
-            message: "요청에 오류가 있습니다. 입력 정보를 확인해주세요.",
+            message: "There is an error in the request. Please check your input information.",
             code: "bad_request",
             status: error.response.status,
           })
         } else if (error.response.status === 403) {
           return Promise.reject({
-            message: "이 작업을 수행할 권한이 없습니다.",
+            message: "You do not have permission to perform this action.",
             code: "forbidden",
             status: error.response.status,
           })
         } else if (error.response.status === 404) {
           return Promise.reject({
-            message: "요청한 리소스를 찾을 수 없습니다.",
+            message: "The requested resource could not be found.",
             code: "not_found",
             status: error.response.status,
           })
         } else if (error.response.status === 409) {
           return Promise.reject({
-            message: "요청이 현재 상태와 충돌합니다. 최신 정보로 다시 시도해주세요.",
+            message: "The request conflicts with the current state. Please try again with the latest information.",
             code: "conflict",
             status: error.response.status,
           })
         } else if (error.response.status === 429) {
           return Promise.reject({
-            message: "너무 많은 요청을 보냈습니다. 잠시 후 다시 시도해주세요.",
+            message: "Too many requests sent. Please try again later.",
             code: "rate_limit",
             status: error.response.status,
           })
         } else if (error.response.status >= 500) {
           return Promise.reject({
-            message: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            message: "A server error occurred. Please try again later.",
             code: "server_error",
             status: error.response.status,
           })
         }
 
-        // API 에러 응답 처리
+        // Handle API error responses
         if (error.response.data?.error) {
           return Promise.reject({
-            message: error.response.data.error_description || "요청 처리 중 오류가 발생했습니다.",
+            message: error.response.data.error_description || "An error occurred while processing the request.",
             code: error.response.data.error,
             status: error.response.status,
           })
         }
 
-        // 기타 에러 처리
+        // Handle other errors
         return Promise.reject({
-          message: "알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+          message: "An unknown error occurred. Please try again later.",
           code: "unknown_error",
           status: error.response?.status,
         })
@@ -175,7 +175,7 @@ class ApiClient {
     )
   }
 
-  // 토큰 갱신 메서드
+  // Token refresh method
   private async refreshAccessToken(
     refreshToken: string,
   ): Promise<{ access_token: string; refresh_token: string; expires_at: string }> {
@@ -185,7 +185,7 @@ class ApiClient {
       })
       const { access_token, refresh_token, expires_at } = response.data
 
-      // 새 토큰 저장
+      // Store new tokens
       if (typeof window !== "undefined") {
         localStorage.setItem("auth_token", access_token)
         localStorage.setItem("refresh_token", refresh_token)
@@ -203,7 +203,7 @@ class ApiClient {
     }
   }
 
-  // 로그아웃 메서드
+  // Logout method
   private logout(): void {
     if (typeof window !== "undefined") {
       localStorage.removeItem("auth_token")
@@ -213,7 +213,7 @@ class ApiClient {
     }
   }
 
-  // GET 요청
+  // GET request
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.client.get(url, config)
@@ -227,7 +227,7 @@ class ApiClient {
     }
   }
 
-  // POST 요청
+  // POST request
   public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.client.post(url, data, config)
@@ -241,7 +241,7 @@ class ApiClient {
     }
   }
 
-  // PUT 요청
+  // PUT request
   public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.client.put(url, data, config)
@@ -255,7 +255,7 @@ class ApiClient {
     }
   }
 
-  // DELETE 요청
+  // DELETE request
   public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.client.delete(url, config)
@@ -270,7 +270,7 @@ class ApiClient {
   }
 }
 
-// API 클라이언트 인스턴스 생성
+// Create API client instance
 const apiClient = new ApiClient("https://verigate-api.injun.dev")
 
 export default apiClient

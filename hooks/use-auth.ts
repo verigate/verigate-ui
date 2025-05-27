@@ -17,18 +17,18 @@ export function useAuth() {
   const searchParams = useSearchParams()
   const toast = useToastContext()
 
-  // 세션 만료 메시지 처리 (클라이언트 전용)
+  // Session expiry message handling (client-side only)
   useEffect(() => {
     if (typeof window !== "undefined" && searchParams.get("session_expired") === "true") {
       toast.addToast({
-        title: "세션 만료",
-        description: "보안을 위해 세션이 만료되었습니다. 다시 로그인해주세요.",
+        title: "Session Expired",
+        description: "Your session has expired for security reasons. Please sign in again.",
         type: "warning",
       })
     }
   }, [searchParams, toast])
 
-  // 인증 상태 지속성 처리 (클라이언트 전용)
+  // Authentication state persistence handling (client-side only)
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -55,7 +55,7 @@ export function useAuth() {
     queryFn: AuthService.getCurrentUser,
     retry: false,
     enabled: typeof window !== "undefined" && !!localStorage?.getItem("auth_token"),
-    staleTime: 1000 * 60 * 5, // 5분
+    staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
   const loginMutation = useMutation({
@@ -63,17 +63,17 @@ export function useAuth() {
     onSuccess: (data: LoginResponse) => {
       queryClient.setQueryData(["currentUser"], data.user)
       toast.addToast({
-        title: "로그인 성공",
-        description: "환영합니다!",
+        title: "Login Successful",
+        description: "Welcome!",
         type: "success",
       })
-      // 로그인 성공 시 대시보드로 자동 리디렉션
+      // Automatically redirect to dashboard on successful login
       router.push("/dashboard")
     },
     onError: (error: any) => {
       toast.addToast({
-        title: "로그인 실패",
-        description: error.message || "로그인 중 오류가 발생했습니다.",
+        title: "Login Failed",
+        description: error.message || "An error occurred during login.",
         type: "error",
       })
     },
@@ -83,26 +83,26 @@ export function useAuth() {
     mutationFn: (userData: RegisterRequest) => AuthService.register(userData),
     onSuccess: () => {
       toast.addToast({
-        title: "회원가입 성공",
-        description: "계정이 성공적으로 생성되었습니다. 로그인해주세요.",
+        title: "Registration Successful",
+        description: "Account created successfully. Please sign in.",
         type: "success",
       })
       router.push("/login?registered=true")
     },
     onError: (error: any) => {
-      let errorMessage = "회원가입 중 오류가 발생했습니다."
+      let errorMessage = "An error occurred during registration."
 
-      // 에러 코드에 따른 사용자 친화적인 메시지
+      // User-friendly messages based on error codes
       if (error.code === "invalid_request") {
-        errorMessage = "입력한 정보가 올바르지 않습니다. 다시 확인해주세요."
+        errorMessage = "The information you entered is incorrect. Please check and try again."
       } else if (error.code === "email_already_exists") {
-        errorMessage = "이미 사용 중인 이메일입니다. 다른 이메일을 사용해주세요."
+        errorMessage = "This email is already in use. Please use a different email."
       } else if (error.code === "username_already_exists") {
-        errorMessage = "이미 사용 중인 사용자 이름입니다. 다른 이름을 사용해주세요."
+        errorMessage = "This username is already in use. Please use a different username."
       }
 
       toast.addToast({
-        title: "회원가입 실패",
+        title: "Registration Failed",
         description: error.message || errorMessage,
         type: "error",
       })
@@ -114,15 +114,15 @@ export function useAuth() {
     onSuccess: (updatedUser) => {
       queryClient.setQueryData(["currentUser"], updatedUser)
       toast.addToast({
-        title: "프로필 업데이트 성공",
-        description: "프로필이 성공적으로 업데이트되었습니다.",
+        title: "Profile Update Successful",
+        description: "Profile updated successfully.",
         type: "success",
       })
     },
     onError: (error: any) => {
       toast.addToast({
-        title: "프로필 업데이트 실패",
-        description: error.message || "프로필 업데이트 중 오류가 발생했습니다.",
+        title: "Profile Update Failed",
+        description: error.message || "An error occurred while updating profile.",
         type: "error",
       })
     },
@@ -133,23 +133,23 @@ export function useAuth() {
       AuthService.changePassword(oldPassword, newPassword),
     onSuccess: () => {
       toast.addToast({
-        title: "비밀번호 변경 성공",
-        description: "비밀번호가 성공적으로 변경되었습니다.",
+        title: "Password Change Successful",
+        description: "Password changed successfully.",
         type: "success",
       })
     },
     onError: (error: any) => {
-      let errorMessage = "비밀번호 변경 중 오류가 발생했습니다."
+      let errorMessage = "An error occurred while changing password."
 
-      // 에러 코드에 따른 사용자 친화적인 메시지
+      // User-friendly messages based on error codes
       if (error.code === "invalid_credentials") {
-        errorMessage = "현재 비밀번호가 올바르지 않습니다."
+        errorMessage = "Current password is incorrect."
       } else if (error.code === "weak_password") {
-        errorMessage = "새 비밀번호가 보안 요구사항을 충족하지 않습니다."
+        errorMessage = "New password does not meet security requirements."
       }
 
       toast.addToast({
-        title: "비밀번호 변경 실패",
+        title: "Password Change Failed",
         description: error.message || errorMessage,
         type: "error",
       })
@@ -162,16 +162,16 @@ export function useAuth() {
       AuthService.logout()
       queryClient.clear()
       toast.addToast({
-        title: "계정 삭제 성공",
-        description: "계정이 성공적으로 삭제되었습니다.",
+        title: "Account Deletion Successful",
+        description: "Account deleted successfully.",
         type: "success",
       })
       router.push("/login")
     },
     onError: (error: any) => {
       toast.addToast({
-        title: "계정 삭제 실패",
-        description: error.message || "계정 삭제 중 오류가 발생했습니다.",
+        title: "Account Deletion Failed",
+        description: error.message || "An error occurred while deleting account.",
         type: "error",
       })
     },
@@ -182,15 +182,15 @@ export function useAuth() {
       await AuthService.logout()
       queryClient.clear()
       toast.addToast({
-        title: "로그아웃 성공",
-        description: "성공적으로 로그아웃되었습니다.",
+        title: "Logout Successful",
+        description: "Successfully logged out.",
         type: "success",
       })
       router.push("/login")
     } catch (error: any) {
       toast.addToast({
-        title: "로그아웃 실패",
-        description: error.message || "로그아웃 중 오류가 발생했습니다.",
+        title: "Logout Failed",
+        description: error.message || "An error occurred during logout.",
         type: "error",
       })
     }

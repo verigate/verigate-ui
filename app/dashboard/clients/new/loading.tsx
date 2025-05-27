@@ -1,12 +1,14 @@
-import { Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react";
 
 export default function Loading() {
   return (
     <div className="container flex min-h-[70vh] items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-muted-foreground">클라이언트 생성 페이지를 불러오는 중...</p>
+        <p className="text-lg text-muted-foreground">
+          Loading client creation page...
+        </p>
       </div>
     </div>
-  )
+  );
 }
