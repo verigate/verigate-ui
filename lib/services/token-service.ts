@@ -23,7 +23,7 @@ const TokenService = {
       const response = await apiClient.get("/api/v1/tokens", {
         params: { page, limit },
       })
-      return response.data
+      return response.data as TokensResponse
     } catch (error) {
       console.error("Error fetching tokens:", error)
       throw error
@@ -35,9 +35,9 @@ const TokenService = {
       await apiClient.delete(`/api/v1/tokens/${id}`)
     } catch (error: any) {
       if (error.status === 404) {
-        throw new Error("토큰을 찾을 수 없습니다.")
+        throw new Error("Token not found.")
       } else if (error.code === "already_revoked") {
-        throw new Error("이미 취소된 토큰입니다.")
+        throw new Error("Token is already revoked.")
       }
       throw error
     }
