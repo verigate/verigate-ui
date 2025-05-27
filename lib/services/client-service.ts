@@ -52,7 +52,7 @@ const ClientService = {
       const response = await apiClient.get("/api/v1/clients", {
         params: { page, limit },
       })
-      return response.data
+      return response.data as ClientsResponse
     } catch (error) {
       console.error("Error fetching clients:", error)
       throw error
@@ -62,10 +62,10 @@ const ClientService = {
   getClient: async (id: number): Promise<Client> => {
     try {
       const response = await apiClient.get(`/api/v1/clients/${id}`)
-      return response.data
+      return response.data as Client
     } catch (error: any) {
       if (error.status === 404) {
-        throw new Error("클라이언트를 찾을 수 없습니다.")
+        throw new Error("Client not found.")
       }
       throw error
     }
@@ -73,7 +73,7 @@ const ClientService = {
 
   createClient: async (data: ClientCreateRequest): Promise<Client> => {
     try {
-      // 리다이렉트 URI가 배열이 아닌 문자열로 들어온 경우 처리
+      // Handle case where redirect URIs come as string instead of array
       if (typeof data.redirect_uris === "string") {
         data.redirect_uris = (data.redirect_uris as unknown as string)
           .split("\n")
@@ -82,13 +82,13 @@ const ClientService = {
       }
 
       const response = await apiClient.post("/api/v1/clients", data)
-      return response.data
+      return response.data as Client
     } catch (error: any) {
       if (error.code === "validation_error") {
         if (error.message.includes("redirect_uri")) {
-          throw new Error("유효하지 않은 리다이렉트 URI입니다. 올바른 URL 형식인지 확인해주세요.")
+          throw new Error("Invalid redirect URI. Please check that it's a valid URL format.")
         } else if (error.message.includes("client_name")) {
-          throw new Error("이미 사용 중인 클라이언트 이름입니다.")
+          throw new Error("Client name is already in use.")
         }
       }
       throw error
@@ -97,7 +97,7 @@ const ClientService = {
 
   updateClient: async (id: number, data: Partial<ClientCreateRequest>): Promise<void> => {
     try {
-      // 리다이렉트 URI가 배열이 아닌 문자열로 들어온 경우 처리
+      // Handle case where redirect URIs come as string instead of array
       if (data.redirect_uris && typeof data.redirect_uris === "string") {
         data.redirect_uris = (data.redirect_uris as unknown as string)
           .split("\n")
@@ -108,10 +108,10 @@ const ClientService = {
       await apiClient.put(`/api/v1/clients/${id}`, data)
     } catch (error: any) {
       if (error.status === 404) {
-        throw new Error("클라이언트를 찾을 수 없습니다.")
+        throw new Error("Client not found.")
       } else if (error.code === "validation_error") {
         if (error.message.includes("redirect_uri")) {
-          throw new Error("유효하지 않은 리다이렉트 URI입니다. 올바른 URL 형식인지 확인해주세요.")
+          throw new Error("Invalid redirect URI. Please check that it's a valid URL format.")
         }
       }
       throw error
@@ -123,9 +123,9 @@ const ClientService = {
       await apiClient.delete(`/api/v1/clients/${id}`)
     } catch (error: any) {
       if (error.status === 404) {
-        throw new Error("클라이언트를 찾을 수 없습니다.")
+        throw new Error("Client not found.")
       } else if (error.status === 409) {
-        throw new Error("이 클라이언트는 현재 사용 중이므로 삭제할 수 없습니다.")
+        throw new Error("This client is currently in use and cannot be deleted.")
       }
       throw error
     }

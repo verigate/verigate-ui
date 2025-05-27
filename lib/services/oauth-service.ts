@@ -47,14 +47,14 @@ const OAuthService = {
       }
 
       const response = await apiClient.get("/api/v1/oauth/consent", { params })
-      return response.data
+      return response.data as ConsentInfo
     } catch (error: any) {
       if (error.code === "invalid_client") {
-        throw new Error("유효하지 않은 클라이언트입니다.")
+        throw new Error("Invalid client.")
       } else if (error.code === "invalid_redirect_uri") {
-        throw new Error("유효하지 않은 리다이렉트 URI입니다.")
+        throw new Error("Invalid redirect URI.")
       } else if (error.code === "invalid_scope") {
-        throw new Error("유효하지 않은 스코프입니다.")
+        throw new Error("Invalid scope.")
       }
       throw error
     }
@@ -63,7 +63,7 @@ const OAuthService = {
   submitConsent: async (data: ConsentRequest): Promise<ConsentResponse> => {
     try {
       const response = await apiClient.post("/api/v1/oauth/consent", data)
-      return response.data
+      return response.data as ConsentResponse
     } catch (error) {
       console.error("Error submitting consent:", error)
       throw error

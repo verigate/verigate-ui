@@ -45,9 +45,9 @@ const AuthService = {
     } catch (error: any) {
       if (error.code === "conflict") {
         if (error.message.includes("email")) {
-          throw new Error("이미 사용 중인 이메일입니다. 다른 이메일을 사용해주세요.")
+          throw new Error("This email is already in use. Please use a different email.")
         } else if (error.message.includes("username")) {
-          throw new Error("이미 사용 중인 사용자 이름입니다. 다른 이름을 사용해주세요.")
+          throw new Error("This username is already in use. Please use a different username.")
         }
       }
       throw error
@@ -56,7 +56,7 @@ const AuthService = {
 
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     try {
-      const response = await apiClient.post<LoginResponse>("/api/v1/users/login", data)    // 토큰 저장
+      const response = await apiClient.post<LoginResponse>("/api/v1/users/login", data)    // Store tokens
     if (typeof window !== "undefined") {
       if (response.data.access_token) {
         localStorage.setItem("auth_token", response.data.access_token)
@@ -71,15 +71,15 @@ const AuthService = {
 
       return response.data
     } catch (error: any) {
-      // 더 구체적인 에러 메시지 제공
+      // Provide more specific error messages
       if (error.status === 401) {
-        throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.")
+        throw new Error("Incorrect email or password.")
       } else if (error.status === 429) {
-        throw new Error("너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.")
+        throw new Error("Too many login attempts. Please try again later.")
       } else if (error.status === 403) {
-        throw new Error("계정이 잠겼습니다. 관리자에게 문의하세요.")
+        throw new Error("Account is locked. Please contact an administrator.")
       } else if (!navigator.onLine) {
-        throw new Error("인터넷 연결을 확인해주세요.")
+        throw new Error("Please check your internet connection.")
       }
       throw error
     }
@@ -87,12 +87,12 @@ const AuthService = {
 
   logout: async (): Promise<void> => {
     try {
-      // 서버에 로그아웃 요청 (토큰 무효화)
+      // Request logout from server (invalidate tokens)
       await apiClient.post("/api/v1/users/logout")
     } catch (error) {
       console.error("Logout error:", error)
   } finally {
-    // 로컬 스토리지에서 토큰 제거
+    // Remove tokens from local storage
     if (typeof window !== "undefined") {
       localStorage.removeItem("auth_token")
       localStorage.removeItem("refresh_token")
@@ -117,7 +117,7 @@ const AuthService = {
       return response.data
     } catch (error: any) {
       if (error.code === "validation_error") {
-        throw new Error("입력한 정보가 유효하지 않습니다. 다시 확인해주세요.")
+        throw new Error("The information entered is invalid. Please check again.")
       }
       throw error
     }
@@ -131,9 +131,9 @@ const AuthService = {
       })
     } catch (error: any) {
       if (error.code === "invalid_credentials") {
-        throw new Error("현재 비밀번호가 올바르지 않습니다.")
+        throw new Error("Current password is incorrect.")
       } else if (error.code === "validation_error") {
-        throw new Error("새 비밀번호가 보안 요구사항을 충족하지 않습니다.")
+        throw new Error("New password does not meet security requirements.")
       }
       throw error
     }

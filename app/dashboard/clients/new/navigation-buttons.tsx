@@ -1,27 +1,34 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface NavigationButtonsProps {
-  isPending: boolean
-  isSuccess: boolean
+  isPending: boolean;
+  isSuccess: boolean;
 }
 
-export function NavigationButtons({ isPending, isSuccess }: NavigationButtonsProps) {
-  const router = useRouter()
+export function NavigationButtons({
+  isPending,
+  isSuccess,
+}: NavigationButtonsProps) {
+  const router = useRouter();
 
-  // 성공 시 리다이렉션
+  // Redirect on success
   useEffect(() => {
     if (isSuccess) {
-      router.push("/dashboard/clients")
+      router.push("/dashboard/clients");
     }
-  }, [isSuccess, router])
+  }, [isSuccess, router]);
 
   return (
     <>
-      <Button variant="outline" onClick={() => router.push("/dashboard/clients")} className="w-full sm:w-auto h-11">
+      <Button
+        variant="outline"
+        onClick={() => router.push("/dashboard/clients")}
+        className="w-full sm:w-auto h-11"
+      >
         Cancel
       </Button>
       <Button
@@ -33,5 +40,5 @@ export function NavigationButtons({ isPending, isSuccess }: NavigationButtonsPro
         {isPending ? "Creating..." : "Create Client"}
       </Button>
     </>
-  )
+  );
 }
