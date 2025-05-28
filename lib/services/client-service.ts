@@ -15,6 +15,10 @@ export interface Client {
   tos_uri?: string
   policy_uri?: string
   is_confidential: boolean
+  pkce_required: boolean
+  token_endpoint_auth_method: string
+  access_token_lifetime: number
+  refresh_token_lifetime: number
   is_active: boolean
   created_at: string
   updated_at: string
@@ -37,6 +41,10 @@ export interface ClientCreateRequest {
   software_id?: string
   software_version?: string
   is_confidential: boolean
+  pkce_required: boolean
+  token_endpoint_auth_method: string
+  access_token_lifetime: number
+  refresh_token_lifetime: number
 }
 
 export interface ClientsResponse {

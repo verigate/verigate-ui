@@ -72,6 +72,10 @@ export default function NewClientForm() {
           response_types: formData.response_types,
           scope: formData.scope,
           is_confidential: formData.is_confidential,
+          pkce_required: formData.pkce_required,
+          token_endpoint_auth_method: formData.token_endpoint_auth_method,
+          access_token_lifetime: formData.access_token_lifetime,
+          refresh_token_lifetime: formData.refresh_token_lifetime,
         });
       } catch (error) {
         if (error instanceof Error) {
