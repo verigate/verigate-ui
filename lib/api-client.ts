@@ -11,6 +11,7 @@ export interface ApiResponse<T> {
 export interface ApiError {
   error: string
   error_description: string
+  details?: any
 }
 
 // API client class
@@ -18,6 +19,7 @@ class ApiClient {
   private client: AxiosInstance
   private baseUrl: string
   private refreshPromise: Promise<{ access_token: string; refresh_token: string; expires_at: string }> | null = null
+  private isRefreshing: boolean = false
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
@@ -69,13 +71,36 @@ class ApiClient {
           const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh_token") : null
 
           if (refreshToken) {
-            if (!this.refreshPromise) {
-              this.refreshPromise = this.refreshAccessToken(refreshToken)
+            // Check if we're already refreshing to prevent race conditions
+            if (this.isRefreshing) {
+              // Wait for ongoing refresh to complete
+              if (this.refreshPromise) {
+                try {
+                  const tokens = await this.refreshPromise
+                  // Retry original request with new token
+                  if (originalRequest.headers) {
+                    originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`
+                  }
+                  originalRequest._retry = true
+                  return this.client(originalRequest)
+                } catch (refreshError) {
+                  this.logout()
+                  return Promise.reject({
+                    message: "Login session has expired. Please log in again.",
+                    code: "session_expired",
+                  })
+                }
+              }
             }
+
+            // Start refresh process
+            this.isRefreshing = true
+            this.refreshPromise = this.refreshAccessToken(refreshToken)
 
             try {
               const tokens = await this.refreshPromise
               this.refreshPromise = null
+              this.isRefreshing = false
 
               // Retry original request with new token
               if (originalRequest.headers) {
@@ -85,6 +110,7 @@ class ApiClient {
               return this.client(originalRequest)
             } catch (refreshError) {
               this.refreshPromise = null
+              this.isRefreshing = false
               // Logout when token refresh fails
               this.logout()
               return Promise.reject({
